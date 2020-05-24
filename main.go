@@ -13,12 +13,13 @@ type ReqValid struct {
 }
 
 func (c *ReqValid) Run(valid interface{}) context.Handler {
-	return ReqValid{
+	b := ReqValid{
 		Valid:      valid,
 		Mode:       c.Mode,
 		FailFunc:   c.FailFunc,
 		ContextKey: c.ContextKey,
-	}.Serve
+	}
+	return b.Serve
 }
 
 func New(cKey string, fail func(err error, ctx context.Context), more ...string) ReqValid {
