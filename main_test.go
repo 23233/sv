@@ -11,6 +11,9 @@ func TestNew(t *testing.T) {
 	type req struct {
 		Name string `json:"name" url:"name" comment:"name" validate:"required"`
 	}
+	type req2 struct {
+		Desc string `json:"desc" url:"desc" comment:"desc"`
+	}
 	sv := New("sv", func(err error, ctx context.Context) {
 		ctx.StatusCode(iris.StatusBadRequest)
 		_, _ = ctx.JSON(iris.Map{"detail": err.Error()})
@@ -21,8 +24,13 @@ func TestNew(t *testing.T) {
 		req := ctx.Values().Get("sv").(*req)
 		_, _ = ctx.JSON(iris.Map{"name": req.Name})
 	})
+	app.Get("/111", sv.Run(new(req2)), func(ctx context.Context) {
+		req := ctx.Values().Get("sv").(*req2)
+		_, _ = ctx.JSON(iris.Map{"name": req.Desc})
+	})
 
 	e := httptest.New(t, app)
 	e.GET("/").Expect().Status(httptest.StatusBadRequest)
+	e.GET("/111").Expect().Status(httptest.StatusOK)
 
 }
