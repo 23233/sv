@@ -33,6 +33,8 @@ func New(cKey string, fail func(err error, ctx context.Context), more ...string)
 }
 
 func (c *ReqValid) Serve(ctx context.Context) {
+	// reset data
+	ctx.Values().Set(c.ContextKey, "")
 	var err error
 	switch c.Mode {
 	case "query":
