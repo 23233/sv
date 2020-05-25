@@ -2,6 +2,7 @@ package simple_valid
 
 import (
 	"github.com/kataras/iris/v12/context"
+	"reflect"
 )
 
 // 请求验证器
@@ -33,27 +34,27 @@ func New(cKey string, fail func(err error, ctx context.Context), more ...string)
 }
 
 func (c *ReqValid) Serve(ctx context.Context) {
-	// reset data
 	ctx.Values().Set(c.ContextKey, "")
+	valid := reflect.New(reflect.TypeOf(c.Valid).Elem()).Interface()
 	var err error
 	switch c.Mode {
 	case "query":
-		err = ctx.ReadQuery(&c.Valid)
+		err = ctx.ReadQuery(&valid)
 		break
 	case "json":
-		err = ctx.ReadJSON(&c.Valid)
+		err = ctx.ReadJSON(&valid)
 		break
 	case "xml":
-		err = ctx.ReadXML(&c.Valid)
+		err = ctx.ReadXML(&valid)
 		break
 	case "form":
-		err = ctx.ReadForm(&c.Valid)
+		err = ctx.ReadForm(&valid)
 		break
 	default:
 		if ctx.Method() == "GET" {
-			err = ctx.ReadQuery(&c.Valid)
+			err = ctx.ReadQuery(&valid)
 		} else {
-			err = ctx.ReadJSON(&c.Valid)
+			err = ctx.ReadJSON(&valid)
 		}
 		break
 	}
@@ -62,12 +63,13 @@ func (c *ReqValid) Serve(ctx context.Context) {
 		c.FailFunc(err, ctx)
 		return
 	}
-	if err := GlobalValidator.Check(c.Valid); err != nil {
+
+	if err := GlobalValidator.Check(valid); err != nil {
 		Warning.Printf("valid fields fail %s", err.Error())
 		c.FailFunc(err, ctx)
 		return
 	}
 	// this is point struct
-	ctx.Values().Set(c.ContextKey, c.Valid)
+	ctx.Values().Set(c.ContextKey, valid)
 	ctx.Next()
 }
