@@ -13,21 +13,21 @@ type ReqValid struct {
 	ContextKey string
 }
 
-func (c *ReqValid) Run(valid interface{}) context.Handler {
+func (c *ReqValid) Run(valid interface{}, mode ...string) context.Handler {
+
 	b := ReqValid{
 		Valid:      valid,
-		Mode:       c.Mode,
 		FailFunc:   c.FailFunc,
 		ContextKey: c.ContextKey,
+	}
+	if len(mode) >= 1 {
+		b.Mode = mode[0]
 	}
 	return b.Serve
 }
 
-func New(cKey string, fail func(err error, ctx context.Context), more ...string) ReqValid {
+func New(cKey string, fail func(err error, ctx context.Context)) ReqValid {
 	var c ReqValid
-	if len(more) >= 1 {
-		c.Mode = more[0]
-	}
 	c.FailFunc = fail
 	c.ContextKey = cKey
 	return c
