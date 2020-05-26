@@ -21,7 +21,7 @@ type ReqValid struct {
 }
 
 func Run(valid interface{}, mode ...string) context.Handler {
-	var b ReqValid
+	b := new(ReqValid)
 	b.Valid = valid
 	if len(mode) >= 1 {
 		b.Mode = mode[0]
@@ -29,7 +29,7 @@ func Run(valid interface{}, mode ...string) context.Handler {
 	return b.Serve
 }
 
-func (c ReqValid) Serve(ctx context.Context) {
+func (c *ReqValid) Serve(ctx context.Context) {
 	ctx.Values().Set(GlobalContextKey, "")
 	var err error
 	switch c.Mode {
