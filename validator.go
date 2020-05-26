@@ -1,4 +1,4 @@
-package simple_valid
+package sv
 
 import (
 	"bytes"

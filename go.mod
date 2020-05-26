@@ -1,4 +1,4 @@
-module github.com/23233/simple_valid
+module github.com/23233/sv
 
 go 1.14
 
