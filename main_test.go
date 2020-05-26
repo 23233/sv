@@ -20,17 +20,16 @@ func TestNew(t *testing.T) {
 		return
 	})
 	app := iris.New()
-	app.Get("/", sv.Run(new(req)), func(ctx context.Context) {
+	app.Get("/", sv.Run(req{}), func(ctx context.Context) {
 		req := ctx.Values().Get("sv").(*req)
 		_, _ = ctx.JSON(iris.Map{"name": req.Name})
 	})
-	app.Get("/111", sv.Run(new(req2)), func(ctx context.Context) {
+	app.Get("/111", sv.Run(req2{}), func(ctx context.Context) {
 		req := ctx.Values().Get("sv").(*req2)
 		_, _ = ctx.JSON(iris.Map{"name": req.Desc})
 	})
 
 	e := httptest.New(t, app)
 	e.GET("/").Expect().Status(httptest.StatusBadRequest)
-	e.GET("/111").Expect().Status(httptest.StatusOK)
-
+	e.GET("/111", "name=123123").Expect().Status(httptest.StatusOK)
 }

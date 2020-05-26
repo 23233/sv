@@ -35,7 +35,11 @@ func New(cKey string, fail func(err error, ctx context.Context)) ReqValid {
 
 func (c *ReqValid) Serve(ctx context.Context) {
 	ctx.Values().Set(c.ContextKey, "")
-	valid := reflect.New(reflect.TypeOf(c.Valid).Elem()).Interface()
+	t := reflect.TypeOf(c.Valid)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	valid := reflect.New(t).Interface()
 	var err error
 	switch c.Mode {
 	case "query":
