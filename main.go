@@ -3,6 +3,7 @@ package sv
 import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
+	"reflect"
 )
 
 var (
@@ -14,57 +15,52 @@ var (
 	GlobalContextKey = "sv"
 )
 
-// 请求验证器
-type ReqValid struct {
-	Valid interface{}
-	Mode  string
-}
-
 func Run(valid interface{}, mode ...string) context.Handler {
-	b := new(ReqValid)
-	b.Valid = valid
+	var m string
 	if len(mode) >= 1 {
-		b.Mode = mode[0]
+		m = mode[0]
 	}
-	return b.Serve
-}
 
-func (c *ReqValid) Serve(ctx context.Context) {
-	ctx.Values().Set(GlobalContextKey, "")
-	var err error
-	switch c.Mode {
-	case "query":
-		err = ctx.ReadQuery(&c.Valid)
-		break
-	case "json":
-		err = ctx.ReadJSON(&c.Valid)
-		break
-	case "xml":
-		err = ctx.ReadXML(&c.Valid)
-		break
-	case "form":
-		err = ctx.ReadForm(&c.Valid)
-		break
-	default:
-		if ctx.Method() == "GET" {
-			err = ctx.ReadQuery(&c.Valid)
-		} else {
-			err = ctx.ReadJSON(&c.Valid)
+	return func(ctx context.Context) {
+		// 回复到初始状态
+		v := reflect.ValueOf(valid).Elem()
+		v.Set(reflect.Zero(v.Type()))
+
+		var err error
+		switch m {
+		case "query":
+			err = ctx.ReadQuery(valid)
+			break
+		case "json":
+			err = ctx.ReadJSON(valid)
+			break
+		case "xml":
+			err = ctx.ReadXML(valid)
+			break
+		case "form":
+			err = ctx.ReadForm(valid)
+			break
+		default:
+			if ctx.Method() == "GET" {
+				err = ctx.ReadQuery(valid)
+			} else {
+				err = ctx.ReadJSON(valid)
+			}
+			break
 		}
-		break
-	}
-	if err != nil {
-		Warning.Printf("read valid data fail: %s", err.Error())
-		GlobalFailFunc(err, ctx)
-		return
-	}
+		if err != nil {
+			Warning.Printf("read valid data fail: %s", err.Error())
+			GlobalFailFunc(err, ctx)
+			return
+		}
 
-	if err := GlobalValidator.Check(c.Valid); err != nil {
-		Warning.Printf("valid fields fail: %s", err.Error())
-		GlobalFailFunc(err, ctx)
-		return
+		if err := GlobalValidator.Check(valid); err != nil {
+			Warning.Printf("valid fields fail: %s", err.Error())
+			GlobalFailFunc(err, ctx)
+			return
+		}
+		// this is point struct
+		ctx.Values().Set(GlobalContextKey, valid)
+		ctx.Next()
 	}
-	// this is point struct
-	ctx.Values().Set(GlobalContextKey, c.Valid)
-	ctx.Next()
 }
