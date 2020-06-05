@@ -17,8 +17,8 @@ func init() {
 	if err != nil {
 		log.Fatalln("open log file fail：", err)
 	}
-	Info = log.New(os.Stdout, "[simple_valid] Info:", log.Ldate|log.Ltime|log.Lshortfile)
-	Warning = log.New(os.Stdout, "[simple_valid] Warning:", log.Ldate|log.Ltime|log.Lshortfile)
-	Error = log.New(io.MultiWriter(os.Stderr, errFile), "[simple_valid] Error:", log.Ldate|log.Ltime|log.Lshortfile)
+	Info = log.New(os.Stdout, "[sv] Info:", log.Ldate|log.Ltime|log.Lshortfile)
+	Warning = log.New(os.Stdout, "[sv] Warning:", log.Ldate|log.Ltime|log.Lshortfile)
+	Error = log.New(io.MultiWriter(os.Stderr, errFile), "[sv] Error:", log.Ldate|log.Ltime|log.Lshortfile)
 
 }
