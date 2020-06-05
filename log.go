@@ -13,7 +13,7 @@ var (
 )
 
 func init() {
-	errFile, err := os.OpenFile("simple_valid.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	errFile, err := os.OpenFile("sv.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalln("open log file fail：", err)
 	}
