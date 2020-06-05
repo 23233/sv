@@ -8,7 +8,7 @@ import (
 )
 
 type req struct {
-	Name string `json:"name" url:"name" comment:"name" validate:"required"`
+	Name string `json:"name" form:"f_name" url:"u_name" xml:"x_name" comment:"name" validate:"required"`
 }
 type req2 struct {
 	Desc string `json:"desc" url:"desc" comment:"desc"`
@@ -42,7 +42,7 @@ func main() {
 	})
 	app.Use(customLogger)
 
-	app.Any("/", sv.Run(new(req), "form"), func(ctx context.Context) {
+	app.Any("/", sv.Run(new(req)), func(ctx context.Context) {
 		req := ctx.Values().Get("sv").(*req)
 		_, _ = ctx.JSON(iris.Map{"name": req.Name})
 	})

@@ -4,6 +4,7 @@ import (
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
 	"reflect"
+	"strings"
 )
 
 var (
@@ -25,7 +26,6 @@ func Run(valid interface{}, mode ...string) context.Handler {
 		// 回复到初始状态
 		v := reflect.ValueOf(valid).Elem()
 		v.Set(reflect.Zero(v.Type()))
-
 		var err error
 		switch m {
 		case "query":
@@ -44,7 +44,14 @@ func Run(valid interface{}, mode ...string) context.Handler {
 			if ctx.Method() == "GET" {
 				err = ctx.ReadQuery(valid)
 			} else {
-				err = ctx.ReadJSON(valid)
+				contentType := ctx.GetContentTypeRequested()
+				if contentType == "application/x-www-form-urlencoded" || strings.HasPrefix(contentType, "multipart/form-data") {
+					err = ctx.ReadForm(valid)
+				} else if contentType == "application/xml" {
+					err = ctx.ReadXML(valid)
+				} else {
+					err = ctx.ReadJSON(valid)
+				}
 			}
 			break
 		}
