@@ -2,13 +2,12 @@ package sv
 
 import (
 	"github.com/kataras/iris/v12"
-	"github.com/kataras/iris/v12/context"
 	"reflect"
 	"strings"
 )
 
 var (
-	GlobalFailFunc = func(err error, ctx context.Context) {
+	GlobalFailFunc = func(err error, ctx iris.Context) {
 		ctx.StatusCode(iris.StatusBadRequest)
 		_, _ = ctx.JSON(iris.Map{"detail": err.Error()})
 		return
@@ -16,13 +15,13 @@ var (
 	GlobalContextKey = "sv"
 )
 
-func Run(valid interface{}, mode ...string) context.Handler {
+func Run(valid interface{}, mode ...string) iris.Handler {
 	var m string
 	if len(mode) >= 1 {
 		m = mode[0]
 	}
 
-	return func(ctx context.Context) {
+	return func(ctx iris.Context) {
 		// 回复到初始状态
 		v := reflect.ValueOf(valid).Elem()
 		v.Set(reflect.Zero(v.Type()))
