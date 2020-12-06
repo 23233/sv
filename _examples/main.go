@@ -4,43 +4,19 @@ import (
 	"github.com/23233/sv"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/context"
-	"github.com/kataras/iris/v12/middleware/logger"
 )
 
 type req struct {
-	Name string `json:"name" form:"f_name" url:"u_name" xml:"x_name" comment:"name" validate:"required"`
+	Name string `json:"name" form:"name" url:"name" xml:"name" comment:"name" validate:"required"`
 }
 type req2 struct {
 	Desc string `json:"desc" url:"desc" comment:"desc"`
 }
 
-func main() {
+func NewApp() *iris.Application {
 	app := iris.New()
 
 	app.Logger().SetLevel("debug")
-
-	customLogger := logger.New(logger.Config{
-		// Status displays status code
-		Status: true,
-		// IP displays request's remote address
-		IP: true,
-		// Method displays the http method
-		Method: true,
-		// Path displays the request path
-		Path: true,
-		// Query appends the url query to the Path.
-		Query: true,
-
-		// Columns: true,
-
-		// if !empty then its contents derives from `ctx.Values().Get("logger_message")
-		// will be added to the logs.
-		MessageContextKeys: []string{"logger_message"},
-
-		// if !empty then its contents derives from `ctx.GetHeader("User-Agent")
-		MessageHeaderKeys: []string{"User-Agent"},
-	})
-	app.Use(customLogger)
 
 	app.Any("/", sv.Run(new(req)), func(ctx context.Context) {
 		req := ctx.Values().Get("sv").(*req)
@@ -50,7 +26,11 @@ func main() {
 		req := ctx.Values().Get("sv").(*req2)
 		_, _ = ctx.JSON(iris.Map{"name": req.Desc})
 	})
+	return app
+}
 
-	_ = app.Listen(":8080")
+func main() {
+	app := NewApp()
+	_ = app.Listen(":8080", iris.WithOptimizations)
 
 }

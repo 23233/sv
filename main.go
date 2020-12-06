@@ -23,33 +23,34 @@ func Run(valid interface{}, mode ...string) iris.Handler {
 
 	return func(ctx iris.Context) {
 		// 回复到初始状态
-		v := reflect.ValueOf(valid).Elem()
-		v.Set(reflect.Zero(v.Type()))
+		s := reflect.TypeOf(valid).Elem()
+		newS := reflect.New(s)
+		v := newS.Interface()
 		var err error
 		switch m {
 		case "query":
-			err = ctx.ReadQuery(valid)
+			err = ctx.ReadQuery(v)
 			break
 		case "json":
-			err = ctx.ReadJSON(valid)
+			err = ctx.ReadJSON(v)
 			break
 		case "xml":
-			err = ctx.ReadXML(valid)
+			err = ctx.ReadXML(v)
 			break
 		case "form":
-			err = ctx.ReadForm(valid)
+			err = ctx.ReadForm(v)
 			break
 		default:
 			if ctx.Method() == "GET" {
-				err = ctx.ReadQuery(valid)
+				err = ctx.ReadQuery(v)
 			} else {
 				contentType := ctx.GetContentTypeRequested()
 				if contentType == "application/x-www-form-urlencoded" || strings.HasPrefix(contentType, "multipart/form-data") {
-					err = ctx.ReadForm(valid)
+					err = ctx.ReadForm(v)
 				} else if contentType == "application/xml" {
-					err = ctx.ReadXML(valid)
+					err = ctx.ReadXML(v)
 				} else {
-					err = ctx.ReadJSON(valid)
+					err = ctx.ReadJSON(v)
 				}
 			}
 			break
@@ -60,13 +61,13 @@ func Run(valid interface{}, mode ...string) iris.Handler {
 			return
 		}
 
-		if err := GlobalValidator.Check(valid); err != nil {
+		if err := GlobalValidator.Check(v); err != nil {
 			Warning.Printf("valid fields fail: %s", err.Error())
 			GlobalFailFunc(err, ctx)
 			return
 		}
-		// this is point struct
-		ctx.Values().Set(GlobalContextKey, valid)
+		// this is point structv
+		ctx.Values().Set(GlobalContextKey, v)
 		ctx.Next()
 	}
 }

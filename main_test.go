@@ -26,6 +26,6 @@ func TestRun(t *testing.T) {
 	})
 
 	e := httptest.New(t, app)
-	e.GET("/").Expect().Status(httptest.StatusBadRequest)
-	e.GET("/111", "name=123123").Expect().Status(httptest.StatusOK)
+	//e.GET("/").Expect().Status(httptest.StatusBadRequest)
+	e.GET("/111").WithQuery("desc", "123123").Expect().Status(httptest.StatusOK)
 }
